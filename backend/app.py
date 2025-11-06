@@ -5,7 +5,6 @@ import os
 import os
 from werkzeug.utils import secure_filename
 
-
 app = Flask(__name__)
 CORS(app)  # allows React frontend to connect
 
