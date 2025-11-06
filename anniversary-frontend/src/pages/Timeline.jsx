@@ -1,17 +1,26 @@
 import { useState, useEffect } from "react";
-const API_BASE = 'https://anniversary-uwml.onrender.com';
+
+const API_BASE = 'https://annibackend.onrender.com';
 
 export default function Timeline() {
   const [events, setEvents] = useState([]);
   const [newEvent, setNewEvent] = useState({ title: "", description: "", date: "" });
   const [image, setImage] = useState(null);
   const [ascending, setAscending] = useState(false); // false = newest first
+  const [loading, setLoading] = useState(false);
 
   // Fetch events
   const fetchEvents = async () => {
-    const res = await fetch(`${API_BASE}/api/timeline`);
-    const data = await res.json();
-    setEvents(sortEvents(data, ascending));
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE}/api/timeline`);
+      const data = await res.json();
+      setEvents(sortEvents(data, ascending));
+    } catch (err) {
+      console.error("Failed to fetch events:", err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   useEffect(() => {
@@ -28,27 +37,34 @@ export default function Timeline() {
   };
 
   const removeEvent = async (id) => {
-    await fetch(`${API_BASE}/api/timeline/${id}`, {
-      method: "DELETE"
-    });
-    fetchEvents();
+    try {
+      await fetch(`${API_BASE}/api/timeline/${id}`, { method: "DELETE" });
+      fetchEvents();
+    } catch (err) {
+      console.error("Failed to delete event:", err);
+    }
   };
 
   const addEvent = async () => {
+    if (!newEvent.title || !newEvent.date) {
+      alert("Please enter a title and date!");
+      return;
+    }
+
     const formData = new FormData();
     formData.append("title", newEvent.title);
     formData.append("description", newEvent.description);
     formData.append("date", newEvent.date);
     if (image) formData.append("image", image);
 
-    await fetch(`${API_BASE}/api/timeline`, {
-      method: "POST",
-      body: formData
-    });
-
-    setNewEvent({ title: "", description: "", date: "" });
-    setImage(null);
-    fetchEvents();
+    try {
+      await fetch(`${API_BASE}/api/timeline`, { method: "POST", body: formData });
+      setNewEvent({ title: "", description: "", date: "" });
+      setImage(null);
+      fetchEvents();
+    } catch (err) {
+      console.error("Failed to add event:", err);
+    }
   };
 
   const toggleOrder = () => setAscending(!ascending);
@@ -86,50 +102,52 @@ export default function Timeline() {
       </div>
 
       {/* Timeline display */}
-      <ul style={{ listStyle: 'none', padding: 0 }}>
-        {events.map(ev => (
-          <li key={ev.id} style={{
-            border: '1px solid #ccc',
-            borderRadius: '10px',
-            marginBottom: '1rem',
-            padding: '1rem',
-            position: 'relative'
-          }}>
-            <button
-              onClick={() => removeEvent(ev.id)}
-              style={{
-                position: 'absolute',
-                top: '10px',
-                right: '10px',
-                backgroundColor: '#f55',
-                color: 'white',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                padding: '4px 8px'
-              }}
-            >
-              ✕
-            </button>
-            <h3>{ev.title}</h3>
-            <p><b>{ev.date}</b></p>
-            <p>{ev.description}</p>
-            {ev.image_url && (
-              <img
-                src={`http://127.0.0.1:5000${ev.image_url}`}
-                alt={ev.title}
+      {loading ? <p>Loading events...</p> : (
+        <ul style={{ listStyle: 'none', padding: 0 }}>
+          {events.map(ev => (
+            <li key={ev.id} style={{
+              border: '1px solid #ccc',
+              borderRadius: '10px',
+              marginBottom: '1rem',
+              padding: '1rem',
+              position: 'relative'
+            }}>
+              <button
+                onClick={() => removeEvent(ev.id)}
                 style={{
-                  width: "200px",
-                  height: "200px",
-                  objectFit: "cover", // ensures the image fills the square and is cropped automatically
-                  borderRadius: "8px",
-                  marginTop: "0.5rem",
+                  position: 'absolute',
+                  top: '10px',
+                  right: '10px',
+                  backgroundColor: '#f55',
+                  color: 'white',
+                  border: 'none',
+                  borderRadius: '5px',
+                  cursor: 'pointer',
+                  padding: '4px 8px'
                 }}
-              />
-            )}
-          </li>
-        ))}
-      </ul>
+              >
+                ✕
+              </button>
+              <h3>{ev.title}</h3>
+              <p><b>{ev.date}</b></p>
+              <p>{ev.description}</p>
+              {ev.image_url && (
+                <img
+                  src={`${API_BASE}${ev.image_url}`}
+                  alt={ev.title}
+                  style={{
+                    width: "200px",
+                    height: "200px",
+                    objectFit: "cover",
+                    borderRadius: "8px",
+                    marginTop: "0.5rem",
+                  }}
+                />
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
     </div>
   );
 }

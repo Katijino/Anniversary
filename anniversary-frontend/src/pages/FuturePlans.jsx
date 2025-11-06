@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import StarRating from "../components/StarRating.jsx";
-const API_BASE = 'https://anniversary-uwml.onrender.com';
+const API_BASE = 'https://annibackend.onrender.com';
 
 export default function FuturePlans() {
   const [plans, setPlans] = useState([]);
@@ -27,7 +27,7 @@ export default function FuturePlans() {
   };
 
   const removePlan = async (id) => {
-    await fetch(`${API_BASE}/api/futureplans${id}`, {
+    await fetch(`${API_BASE}/api/futureplans/${id}`, {
       method: "DELETE"
     });
     const res = await fetch(`${API_BASE}/api/futureplans`);
