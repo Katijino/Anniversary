@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+const API_BASE = 'https://anniversary-uwml.onrender.com';
 
 export default function Timeline() {
   const [events, setEvents] = useState([]);
@@ -8,7 +9,7 @@ export default function Timeline() {
 
   // Fetch events
   const fetchEvents = async () => {
-    const res = await fetch("http://127.0.0.1:5000/api/timeline");
+    const res = await fetch(`${API_BASE}/api/timeline`);
     const data = await res.json();
     setEvents(sortEvents(data, ascending));
   };
@@ -27,7 +28,7 @@ export default function Timeline() {
   };
 
   const removeEvent = async (id) => {
-    await fetch(`http://127.0.0.1:5000/api/timeline/${id}`, {
+    await fetch(`${API_BASE}/api/timeline/${id}`, {
       method: "DELETE"
     });
     fetchEvents();
@@ -40,7 +41,7 @@ export default function Timeline() {
     formData.append("date", newEvent.date);
     if (image) formData.append("image", image);
 
-    await fetch("http://127.0.0.1:5000/api/timeline", {
+    await fetch(`${API_BASE}/api/timeline`, {
       method: "POST",
       body: formData
     });

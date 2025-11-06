@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import StarRating from "../components/StarRating.jsx";
+const API_BASE = 'https://anniversary-uwml.onrender.com';
 
 export default function FuturePlans() {
   const [plans, setPlans] = useState([]);
@@ -7,29 +8,29 @@ export default function FuturePlans() {
   const [importance, setImportance] = useState(0);
 
   useEffect(() => {
-    fetch("http://127.0.0.1:5000/api/futureplans")
+    fetch(`${API_BASE}/api/futureplans`)
       .then(res => res.json())
       .then(setPlans);
   }, []);
 
   const addPlan = async () => {
     if (!newPlan.trim()) return;
-    await fetch("http://127.0.0.1:5000/api/futureplans", {
+    await fetch(`${API_BASE}/api/futureplans`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({ plan: newPlan, importance })
     });
     setNewPlan("");
     setImportance(0);
-    const res = await fetch("http://127.0.0.1:5000/api/futureplans");
+    const res = await fetch(`${API_BASE}/api/futureplans`);
     setPlans(await res.json());
   };
 
   const removePlan = async (id) => {
-    await fetch(`http://127.0.0.1:5000/api/futureplans/${id}`, {
+    await fetch(`${API_BASE}/api/futureplans${id}`, {
       method: "DELETE"
     });
-    const res = await fetch("http://127.0.0.1:5000/api/futureplans");
+    const res = await fetch(`${API_BASE}/api/futureplans`);
     setPlans(await res.json());
   };
 
